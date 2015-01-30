@@ -5,3 +5,10 @@ Luckily, there are a few excellent accounting packages for people who use taskwa
 
 This tw hook script will use hledger (http://hledger.org) and it's interactive add function (http://hledger.org/manual.html#add) taking all of the details of the accounting-related task you just completed, and piping it through the interactive "add" command, into a properly formatted *ledger file. The object here is to tie the act of marking such a task "done" to the ledger-process, so you don't have to do it later, because it will take only seconds to do, it will establish a regular pattern of accurate bookkeeping, and if you don't do it right then, you'll forget!
 
+### Requirements
+- taskwarrior (http://taskwarrior.org/download/)
+- hledger (http://hledger.org/download.html)
+- tasklib (https://github.com/tbabej/tasklib/tree/develop) note: must use develop branch
+
+
+
