@@ -1,0 +1,35 @@
+#!/usr/bin/python
+
+# taskwarrior-hledger-add-hook
+# launch hledger add on completion of transaction-related tasks
+
+# this is psudo-code, obviously..
+
+# define transaction_task trigger (default = +txn)
+# define hledger --datafile override (default = '')
+
+# if completed_task
+#    continue
+#    else exit
+# if transaction_task
+#    continue
+#    else exit
+
+# build hledger add command
+
+# description --> payee
+# omit first word of description (verb, eg. "pay", "buy", "deposit", etc.)
+# identify "noun" (upper-cased word(s) following verb) becomes payee
+# words following noun become comment
+# example:
+# pay Koodo Mobile cel phone bill
+# becomes:
+# 'Koodo Mobile  ;cel phone bill' (notice two spaces followed by semi-colon)
+# if no upper-cased word(s) found then everything after verb (desc.startswith:word) is payee
+# example:
+# pay koodo mobile cel phone bill
+# becomes:
+# 'koodo mobile cel phone bill'
+
+# project --> Account1
+
