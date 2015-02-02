@@ -1,6 +1,6 @@
 # taskwarrior-hledger-add-hook
 
-#### _note: no functioning code here yet, this is mostly concept so far_
+##### _note: no functioning code here yet, this is mostly concept so far. ideas welcome_
 
 Taskwarrior (http://taskwarrior.org) is great for tracking all kinds of tasks, and many of those tasks will be "transactional", having something to do with accounting. "pay Hydro Electric bill", "invoice Random Productions for video shoot", "buy new furnace gaskets", tracking these, and doing these, is great, but it's HALF the job! If you are completing these tasks but not recording the transactions in some accounting system, you are missing an opportunity to get your sh#t together.
 
