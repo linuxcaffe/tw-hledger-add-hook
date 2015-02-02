@@ -43,3 +43,6 @@
 # build hledger add argument string, example:
 # hledger add today 'Koodo Mobile  ;cel phone bill' telcom
 
+# issue hledger add command
+# if hledger add completes (modifies hledger --datafile) exit
+# else abort task completion
