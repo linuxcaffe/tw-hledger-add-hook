@@ -8,14 +8,19 @@
 # define transaction_task trigger (default = +txn)
 # define hledger --datafile override (default = '')
 
-# if completed_task
+# if is completed_task
 #    continue
 #    else exit
-# if transaction_task
+# if is transaction_task
 #    continue
 #    else exit
 
-# build hledger add command
+# build hledger add command, space delimited
+# hledger add [date] [payee[comment]] [account1] [amount1] [account2] [amount2]
+# comment starts with two spaces and a semicolon
+# values with spaces need to be surrounded with apostrophes ('Payee Name  ;comment')
+# values may be ommitted, but '' required to maintain sequence
+
 
 # payee
 # omit first word of description (verb, eg. "pay", "buy", "deposit", etc.)
