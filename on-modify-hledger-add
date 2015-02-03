@@ -1,4 +1,6 @@
-#!/usr/bin/python
+#!/bin/python
+import datetime
+from tasklib.task import TaskWarrior, Task
 
 # taskwarrior-hledger-add-hook
 # launch hledger add on completion of transaction-related tasks
@@ -6,11 +8,16 @@
 # this is psudo-code, obviously..
 
 # define transaction_task trigger (default = +txn)
+TRANSACTION_TAG = "txn"
+
 # define hledger --file override (default = none)
+
 # if is completed_task
 #    continue
 #    else exit
+
 # if is transaction_task
+tasks = tw.tasks.filter(tag__contains=TRANSACTION_TAG)
 #    continue
 #    else exit
 
@@ -21,11 +28,14 @@
 #    read file size
 
 # build hledger add command, space delimited
-# hledger add [-f FILE] [date] [payee[comment]] [account1] [amount1] [account2] [amount2]
+# hledger add [-f FILE] <date[code]> <payee[comment]> [account1] [amount1] 
 # comment starts with two spaces and a semicolon
 # values with spaces need to be surrounded with apostrophes ('Payee Name  ;comment')
 # values may be ommitted, but '' required to maintain sequence
 
+# Date
+# easiest thing is to use "today", and if another date is desired, it's easy to change interactively
+# the format allows date to be followed by an arbitrary code in parenthesis (we can ignore that for now)
 
 # Payee
 # omit first word of description (verb, eg. "pay", "buy", "deposit", etc.)
@@ -61,5 +71,5 @@
 # exit
 
 # else echo error message "journal entry failed! 
-# undo task completion 
+# task undo (revert to status:pending, the job's not done till the paperwork is submitted!) 
 # exit
