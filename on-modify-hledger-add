@@ -6,8 +6,12 @@
 # this is psudo-code, obviously..
 
 # define transaction_task trigger (default = +txn)
-# define hledger --datafile override (default = '')
-
+# define hledger --file override (default = none)
+# read target journal file
+#    test writable
+#        else exit with error message
+#    read modified time
+#    read file size
 # if is completed_task
 #    continue
 #    else exit
@@ -16,13 +20,13 @@
 #    else exit
 
 # build hledger add command, space delimited
-# hledger add [date] [payee[comment]] [account1] [amount1] [account2] [amount2]
+# hledger add [-f FILE] [date] [payee[comment]] [account1] [amount1] [account2] [amount2]
 # comment starts with two spaces and a semicolon
 # values with spaces need to be surrounded with apostrophes ('Payee Name  ;comment')
 # values may be ommitted, but '' required to maintain sequence
 
 
-# payee
+# Payee
 # omit first word of description (verb, eg. "pay", "buy", "deposit", etc.)
 # identify "noun" (upper-cased word(s) following verb) becomes payee
 # words following noun become comment
@@ -45,9 +49,11 @@
 # if exist uda.amount.any: then amount:value = Amount1
 # else Amount1 = nul
 
+
+
 # build hledger add argument string, example:
-# hledger add today 'Koodo Mobile  ;cel phone bill' telcom
+# hledger add --file=myfile.ledger today 'Koodo Mobile  ;cel phone bill' telcom
 
 # issue hledger add command
 # if hledger add completes (modifies hledger --datafile) exit
-# else abort task completion
+# else undo task completion 
