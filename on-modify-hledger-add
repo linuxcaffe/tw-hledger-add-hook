@@ -7,17 +7,18 @@
 
 # define transaction_task trigger (default = +txn)
 # define hledger --file override (default = none)
-# read target journal file
-#    test writable
-#        else exit with error message
-#    read modified time
-#    read file size
 # if is completed_task
 #    continue
 #    else exit
 # if is transaction_task
 #    continue
 #    else exit
+
+# read target journal file
+#    test writable
+#        else exit with error message
+#    read modified time
+#    read file size
 
 # build hledger add command, space delimited
 # hledger add [-f FILE] [date] [payee[comment]] [account1] [amount1] [account2] [amount2]
@@ -49,11 +50,16 @@
 # if exist uda.amount.any: then amount:value = Amount1
 # else Amount1 = nul
 
-
-
 # build hledger add argument string, example:
-# hledger add --file=myfile.ledger today 'Koodo Mobile  ;cel phone bill' telcom
+# hledger add --file=myfile.journal today 'Koodo Mobile  ;cel phone bill' telcom
 
 # issue hledger add command
-# if hledger add completes (modifies hledger --datafile) exit
-# else undo task completion 
+
+# test is_journal_added_to
+# if journal_mod_time > original_journal_mod_time
+# and journal_file_size > original_journal_file_size
+# exit
+
+# else echo error message "journal entry failed! 
+# undo task completion 
+# exit
