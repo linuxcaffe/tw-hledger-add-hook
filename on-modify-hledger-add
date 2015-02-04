@@ -66,11 +66,17 @@ tasks = tw.tasks.filter(tag__contains=TRANSACTION_TAG)
 
 # issue hledger add command
 
+# test for hledger non-zero exit
+# if non-zero, task undo (revert just-completed task to status:pending)
+# echo error_message
+# exit
+
 # test is_journal_added_to
 # if journal_mod_time > original_journal_mod_time
 # and journal_file_size > original_journal_file_size
+# echo success_message
 # exit
 
-# else echo error message "journal entry failed! 
-# task undo (revert to status:pending, the job's not done till the paperwork is submitted!) 
+# else echo error_message "journal entry failed! 
+# task undo (reverting to status:pending, the job's not done till the paperwork is finished!) 
 # exit
