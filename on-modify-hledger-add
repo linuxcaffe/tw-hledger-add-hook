@@ -11,6 +11,7 @@ from tasklib.task import TaskWarrior, Task
 TRANSACTION_TAG = "txn"
 
 # define hledger --file override (default = none)
+JOURNAL_FILE =
 
 # if is completed_task
 #    continue
