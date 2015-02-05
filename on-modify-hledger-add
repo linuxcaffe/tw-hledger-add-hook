@@ -54,7 +54,7 @@ tasks = tw.tasks.filter(tag__contains=TRANSACTION_TAG)
 
 # Account1
 # if exist uda.account.any: then account:value = Account1 
-# else if has priject.any: then project:value = Account1
+# else if has project.any: then project:value = Account1
 # else Account1 = nul
 
 # Amount1
@@ -67,8 +67,8 @@ tasks = tw.tasks.filter(tag__contains=TRANSACTION_TAG)
 # issue hledger add command
 
 # test for hledger non-zero exit
-# if non-zero, task undo (revert just-completed task to status:pending)
-# echo error_message
+# else echo error_message "journal entry failed! 
+# task undo (reverting to status:pending, the job's not done till the paperwork is finished!) 
 # exit
 
 # test is_journal_added_to
