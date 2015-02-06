@@ -11,18 +11,14 @@ from tasklib.task import TaskWarrior, Task
 TRANSACTION_TAG = "txn"
 
 # define hledger --file override (default = none)
-JOURNAL_FILE =
-
-# if is completed_task
-#    continue
-#    else exit
+JOURNAL_FILE = ''
 
 # if is transaction_task
 task = Task.from_input()
-if task._original_data['status'] is 'pending' and task['status'] is 'completed':
-#    continue
-#    else exit
-sys.exit(1)
+if task._original_data['status'] is 'pending' and task['status'] is 'completed' and task['tag'] has TRANSACTION_TAG:
+
+
+
 
 # read target journal file
 #    test writable
@@ -70,8 +66,7 @@ sys.exit(1)
 
 # test for hledger non-zero exit
 # else echo error_message "journal entry failed! 
-# task undo (reverting to status:pending, the job's not done till the paperwork is finished!) 
-# exit
+sys.exit(1)
 
 # test is_journal_added_to
 # if journal_mod_time > original_journal_mod_time
@@ -80,5 +75,4 @@ sys.exit(1)
 # exit
 
 # else echo error_message "journal entry failed! 
-# task undo (reverting to status:pending, the job's not done till the paperwork is finished!) 
-# exit
+sys.exit(1)
