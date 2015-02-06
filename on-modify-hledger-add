@@ -15,7 +15,7 @@ JOURNAL_FILE = ''
 
 # if is transaction_task
 task = Task.from_input()
-if task._original_data['status'] is 'pending' and task['status'] is 'completed' and task['tag'] has TRANSACTION_TAG:
+if task._original_data['status'] is 'pending' and task['status'] is 'completed' and task['tag'] contains TRANSACTION_TAG:
 
 
 
