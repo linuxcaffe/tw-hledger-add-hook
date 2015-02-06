@@ -18,9 +18,11 @@ JOURNAL_FILE =
 #    else exit
 
 # if is transaction_task
-tasks = tw.tasks.filter(tag__contains=TRANSACTION_TAG)
+task = Task.from_input()
+if task._original_data['status'] is 'pending' and task['status'] is 'completed':
 #    continue
 #    else exit
+sys.exit(1)
 
 # read target journal file
 #    test writable
