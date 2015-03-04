@@ -50,17 +50,8 @@ if task._original_data['status'] is 'pending' and task['status'] is 'completed' 
 # becomes:
 # 'koodo mobile cel phone bill'
 
-# Account1
-# if exist uda.account.any: then account:value = Account1 
-# else if has project.any: then project:value = Account1
-# else Account1 = nul
-
-# Amount1
-# if exist uda.amount.any: then amount:value = Amount1
-# else Amount1 = nul
-
 # build hledger add argument string, example:
-# hledger add --file=myfile.journal today 'Koodo Mobile  ;cel phone bill' telcom
+# hledger add --file=myfile.journal today 'Koodo Mobile  ;cel phone bill'
 
 # issue hledger add command
 
