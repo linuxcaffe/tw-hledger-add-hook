@@ -27,7 +27,7 @@ if task._original_data['status'] is 'pending' and task['status'] is 'completed' 
 #    read file size
 
 # build hledger add command, space delimited
-# hledger add [-f FILE] <date[code]> <payee[comment]> [account1] [amount1] 
+# hledger add [-f FILE] <date[code]> <payee[comment]> 
 # comment starts with two spaces and a semicolon
 # values with spaces need to be surrounded with apostrophes ('Payee Name  ;comment')
 # values may be ommitted, but '' required to maintain sequence
