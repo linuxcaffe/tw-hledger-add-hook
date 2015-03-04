@@ -13,5 +13,5 @@ This tw hook script will use hledger (http://hledger.org) and it's interactive a
 - hledger (http://hledger.org/download.html)
 - tasklib (https://github.com/tbabej/tasklib/tree/develop) note: must use develop branch
 
-
+for how-it-could-work see the psudocode in the on-modify-hledger-add file
 
