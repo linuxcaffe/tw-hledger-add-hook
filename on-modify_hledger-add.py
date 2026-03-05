@@ -106,6 +106,45 @@ def parse_payee(task: dict, trigger_verbs: set) -> tuple:
 
 
 # ============================================================================
+# Project → account mapping
+# ============================================================================
+
+# Map abbreviated/full TW project top-level to canonical hledger account type.
+# exp.auto.insurance → expenses:auto:insurance
+# ass.checking       → assets:checking
+# home.reno          → None (not a ledger account type)
+_ACCOUNT_PREFIXES = {
+    'ass':         'assets',
+    'asset':       'assets',
+    'assets':      'assets',
+    'lia':         'liabilities',
+    'liab':        'liabilities',
+    'liability':   'liabilities',
+    'liabilities': 'liabilities',
+    'exp':         'expenses',
+    'expense':     'expenses',
+    'expenses':    'expenses',
+    'inc':         'income',
+    'income':      'income',
+    'rev':         'revenue',
+    'revenue':     'revenue',
+    'equ':         'equity',
+    'equity':      'equity',
+}
+
+
+def project_to_account(project: str) -> str:
+    """Return hledger account string if project top-level is a ledger type, else ''."""
+    if not project:
+        return ''
+    parts = project.split('.')
+    full = _ACCOUNT_PREFIXES.get(parts[0].lower(), '')
+    if not full:
+        return ''
+    return ':'.join([full] + parts[1:])
+
+
+# ============================================================================
 # Journal stat
 # ============================================================================
 
@@ -130,11 +169,14 @@ def get_journal_stat(journal: str) -> tuple:
 # hledger interaction
 # ============================================================================
 
-def run_hledger_add(date: str, description: str, journal: str) -> int:
+def run_hledger_add(date: str, description: str, journal: str,
+                    account: str = '', amount: str = '') -> int:
     cmd = ['hledger']
     if journal:
         cmd += ['-f', journal]
     cmd += ['add', date, description]
+    if account and amount:
+        cmd += [account, amount]
 
     try:
         tty = open('/dev/tty', 'r+b', buffering=0)
@@ -218,9 +260,15 @@ def main() -> int:
         )
     ]
 
+    # Derive hledger account from project if top-level is a ledger account type
+    # exp.auto.insurance → expenses:auto:insurance  (enables amount pre-fill)
+    account = project_to_account(project)
+
     # Build hledger description argument (single line)
-    # Format: 'Payee  ;human text  amount  tag1:, tag2: value  | ann1 | ann2'
-    human_text = ' '.join(filter(None, [comment, amount]))
+    # Format: 'Payee  ;human text  [amount if no account]  tag1:, tag2: value  | ann1 | ann2'
+    # When account is derived, amount goes as positional arg instead of in comment
+    comment_amount = '' if account else amount
+    human_text = ' '.join(filter(None, [comment, comment_amount]))
     tags_text  = ', '.join(hledger_tags)
     ann_text   = ' | '.join(ann_texts)
     comment_text = '  '.join(filter(None, [human_text, tags_text, ann_text]))
@@ -230,10 +278,13 @@ def main() -> int:
     mtime_before, size_before = get_journal_stat(journal)
 
     # Prompt
-    detail = ' | '.join(filter(None, [comment, amount]))
+    detail_parts = [comment, amount]
+    if account:
+        detail_parts.append(f'{account}')
+    detail = ' | '.join(filter(None, detail_parts))
     print(f'\n[hledger-add] {payee} — {date}' + (f'  ({detail})' if detail else ''), file=sys.stderr)
 
-    run_hledger_add(date, hledger_desc, journal)
+    run_hledger_add(date, hledger_desc, journal, account, amount)
 
     mtime_after, size_after = get_journal_stat(journal)
     recorded = (mtime_after > mtime_before and size_after > size_before)
