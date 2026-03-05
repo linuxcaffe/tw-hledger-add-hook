@@ -31,7 +31,7 @@ def load_config() -> dict:
         'journal':       '',
         'trigger_tags':  'txn,acct',
         'trigger_verbs': 'pay,buy',
-        'amount_uda':    'amount',
+        'amount_uda':    'amt',
     }
     if not CONFIG_FILE.exists():
         return cfg
@@ -177,8 +177,10 @@ def run_hledger_add(date: str, description: str, journal: str,
     if journal:
         cmd += ['-f', journal]
     cmd += ['add', date, description]
-    if account and amount:
-        cmd += [account, amount]
+    if account:
+        cmd.append(account)
+        if amount:
+            cmd.append(amount)
 
     try:
         tty = open('/dev/tty', 'r+b', buffering=0)
@@ -237,8 +239,9 @@ def main() -> int:
     # project.home.reno → 'project: home.reno'
     # priority H        → 'pri: H'
     # +tag              → 'tag:'
-    # Excluded: trigger_tags (txn, acct — already implicit) and the payee tag
-    trigger_tag_set = {t.strip() for t in cfg['trigger_tags'].split(',') if t.strip()}
+    # Excluded: trigger_tags (txn, acct — already implicit), meta tags, and the payee tag
+    meta_tags = {'test'}   # testing/workflow tags that shouldn't appear in the ledger
+    trigger_tag_set = {t.strip() for t in cfg['trigger_tags'].split(',') if t.strip()} | meta_tags
     payee_lower = payee.lower()
 
     hledger_tags = []

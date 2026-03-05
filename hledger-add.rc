@@ -14,9 +14,8 @@ hledger.trigger_tags    = txn,acct
 # Comma-separated verbs (first word of description) that trigger hledger add.
 hledger.trigger_verbs   = pay,buy
 
-# Taskwarrior UDA name for the amount field (string type).
-# Leave blank to disable amount pre-fill.
-# Define in .taskrc:
-#   uda.amount.type=string
-#   uda.amount.label=Amount
-hledger.amount_uda      = amount
+# UDA for transaction amount — defined here so TW picks it up automatically.
+# Rename below and set hledger.amount_uda to match, or leave blank to disable.
+uda.amt.type=string
+uda.amt.label=Amount
+hledger.amount_uda      = amt
