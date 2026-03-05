@@ -1,0 +1,16 @@
+# hledger-add.meta
+# Launches hledger add interactively when a transaction-tagged task is completed
+
+name=hledger-add
+version=0.1.0
+type=hook
+description=Fires hledger add interactively on completion of +txn/+acct tasks or tasks starting with a trigger verb (pay, buy). Pre-fills date and payee from task description; maps TW project/priority/tags to hledger inline tags. Annotates task with ledger reference on success.
+repo=https://github.com/linuxcaffe/tw-hledger-add-hook
+base_url=https://raw.githubusercontent.com/linuxcaffe/tw-hledger-add-hook/master
+files=on-modify_hledger-add.py:hook,hledger-add.rc:config,README.md:doc
+tags=hledger, ledger, accounting, finance, transaction, hook
+
+author=Designed by linuxcaffe, implemented by Claude Code
+license=MIT
+requires_taskwarrior=2.6.0
+requires=hledger
