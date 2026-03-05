@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# HANDCRAFTED
+set -euo pipefail
+
+# ============================================================================
+# tw-hledger-add-hook - Standalone Installer
+# Version: 0.1.0
+#
+# Installs:
+#   ~/.task/hooks/on-modify_hledger-add.py
+#   ~/.task/config/hledger-add.rc  (only if not already present)
+# ============================================================================
+
+VERSION="0.1.0"
+APPNAME="hledger-add"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+tw_msg()     { echo -e "${BLUE}[tw]${NC} $*"; }
+tw_success() { echo -e "${GREEN}[tw] [OK]${NC} $*"; }
+tw_error()   { echo -e "${RED}[tw] [FAIL]${NC} $*" >&2; }
+
+TASK_DIR="${HOME}/.task"
+HOOKS_DIR="${TASK_DIR}/hooks"
+CONFIG_DIR="${TASK_DIR}/config"
+MANIFEST_FILE="${TASK_DIR}/config/.tw_manifest"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+install() {
+    tw_msg "Installing ${APPNAME} v${VERSION}..."
+
+    mkdir -p "$HOOKS_DIR" "$CONFIG_DIR"
+
+    cp "${SCRIPT_DIR}/on-modify_hledger-add.py" "${HOOKS_DIR}/on-modify_hledger-add.py"
+    chmod +x "${HOOKS_DIR}/on-modify_hledger-add.py"
+    tw_msg "Installed: ${HOOKS_DIR}/on-modify_hledger-add.py"
+
+    if [[ -f "${CONFIG_DIR}/hledger-add.rc" ]]; then
+        tw_msg "Config already exists: ${CONFIG_DIR}/hledger-add.rc (not overwritten)"
+    else
+        cp "${SCRIPT_DIR}/hledger-add.rc" "${CONFIG_DIR}/hledger-add.rc"
+        tw_msg "Installed: ${CONFIG_DIR}/hledger-add.rc"
+        tw_msg "EDIT ${CONFIG_DIR}/hledger-add.rc to configure journal path and triggers."
+    fi
+
+    TASKRC="${HOME}/.taskrc"
+    if ! grep -q "hledger-add.rc" "$TASKRC" 2>/dev/null; then
+        echo "include ~/.task/config/hledger-add.rc" >> "$TASKRC"
+        tw_msg "Added include to .taskrc"
+    else
+        tw_msg "Config include already in .taskrc"
+    fi
+
+    # Manifest
+    TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    if [[ -f "$MANIFEST_FILE" ]]; then
+        grep -v "^${APPNAME}|" "$MANIFEST_FILE" > "${MANIFEST_FILE}.tmp" || true
+        mv "${MANIFEST_FILE}.tmp" "$MANIFEST_FILE"
+    fi
+    echo "${APPNAME}|${VERSION}|${HOOKS_DIR}/on-modify_hledger-add.py||${TIMESTAMP}" >> "$MANIFEST_FILE"
+    echo "${APPNAME}|${VERSION}|${CONFIG_DIR}/hledger-add.rc||${TIMESTAMP}"          >> "$MANIFEST_FILE"
+
+    tw_success "Installed ${APPNAME} v${VERSION}"
+    echo ""
+    tw_msg "Next steps:"
+    tw_msg "  1. Edit ${CONFIG_DIR}/hledger-add.rc"
+    tw_msg "  2. (Optional) add UDA to .taskrc:"
+    tw_msg "       uda.amount.type=string"
+    tw_msg "       uda.amount.label=Amount"
+    tw_msg "  3. Test: task <id> done  (task with +txn, +acct, or verb 'pay'/'buy')"
+    echo ""
+}
+
+remove() {
+    tw_msg "Removing ${APPNAME}..."
+
+    if [[ ! -f "$MANIFEST_FILE" ]]; then
+        tw_error "Manifest not found: $MANIFEST_FILE"
+        return 1
+    fi
+
+    grep "^${APPNAME}|" "$MANIFEST_FILE" | cut -d'|' -f3 | while read -r file; do
+        if [[ -f "$file" ]]; then
+            rm "$file"
+            tw_msg "Removed: $(basename "$file")"
+        fi
+    done
+
+    grep -v "^${APPNAME}|" "$MANIFEST_FILE" > "${MANIFEST_FILE}.tmp" || true
+    mv "${MANIFEST_FILE}.tmp" "$MANIFEST_FILE"
+
+    TASKRC="${HOME}/.taskrc"
+    if grep -q "hledger-add.rc" "$TASKRC" 2>/dev/null; then
+        sed -i "/hledger-add.rc/d" "$TASKRC"
+        tw_msg "Removed config include from .taskrc"
+    fi
+
+    tw_success "Removed ${APPNAME}"
+}
+
+case "${1:-install}" in
+    install)          install ;;
+    remove|uninstall) remove  ;;
+    *)
+        echo "Usage: $0 {install|remove}"
+        exit 1
+        ;;
+esac

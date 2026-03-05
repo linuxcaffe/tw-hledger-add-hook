@@ -1,0 +1,22 @@
+# hledger-add.rc — Configuration for tw-hledger-add-hook
+# Copy to ~/.task/config/hledger-add.rc and edit to taste.
+#
+# Include in .taskrc with:
+#   include ~/.task/config/hledger-add.rc
+
+# Path to hledger journal file.
+# Leave blank to use hledger's default ($LEDGER_FILE or ~/.hledger.journal).
+hledger.journal         =
+
+# Comma-separated tags that trigger hledger add on task completion.
+hledger.trigger_tags    = txn,acct
+
+# Comma-separated verbs (first word of description) that trigger hledger add.
+hledger.trigger_verbs   = pay,buy
+
+# Taskwarrior UDA name for the amount field (string type).
+# Leave blank to disable amount pre-fill.
+# Define in .taskrc:
+#   uda.amount.type=string
+#   uda.amount.label=Amount
+hledger.amount_uda      = amount

@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+"""
+on-modify_hledger-add.py — Taskwarrior on-modify hook
+Launches hledger add interactively when a transaction-tagged task is completed.
+
+Trigger: pending → completed, AND task has a trigger tag OR description starts
+         with a trigger verb.
+
+Install: ~/.task/hooks/on-modify_hledger-add.py
+Config:  ~/.task/config/hledger-add.rc  (include in .taskrc)
+Version: 0.1.0
+"""
+
+import json
+import os
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+
+CONFIG_FILE = Path.home() / '.task' / 'config' / 'hledger-add.rc'
+VERSION = '0.1.0'
+
+
+# ============================================================================
+# Config
+# ============================================================================
+
+def load_config() -> dict:
+    cfg = {
+        'journal':       '',
+        'trigger_tags':  'txn,acct',
+        'trigger_verbs': 'pay,buy',
+        'amount_uda':    'amount',
+    }
+    if not CONFIG_FILE.exists():
+        return cfg
+    with CONFIG_FILE.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            k, _, v = line.partition('=')
+            k = k.strip()
+            v = v.split('#')[0].strip()
+            if k in cfg and v:
+                cfg[k] = v
+    return cfg
+
+
+# ============================================================================
+# Trigger detection
+# ============================================================================
+
+def is_triggered(task: dict, cfg: dict) -> bool:
+    tags = set(task.get('tags', []))
+    trigger_tags = {t.strip() for t in cfg['trigger_tags'].split(',') if t.strip()}
+    if tags & trigger_tags:
+        return True
+    desc = task.get('description', '')
+    words = desc.split()
+    first_word = words[0].lower() if words else ''
+    trigger_verbs = {v.strip().lower() for v in cfg['trigger_verbs'].split(',') if v.strip()}
+    return first_word in trigger_verbs
+
+
+# ============================================================================
+# Payee / comment parsing
+# ============================================================================
+
+def parse_payee(task: dict, trigger_verbs: set) -> tuple:
+    """Return (payee, comment).
+
+    Strategy 1: consecutive capitalised word(s) after verb → payee; rest → comment
+    Strategy 2: first capitalised tag → payee; '' → comment
+    Strategy 3: all words after verb (or full description) → payee; '' → comment
+    """
+    desc = task.get('description', '').strip()
+    words = desc.split()
+
+    rest = words
+    if words and words[0].lower() in trigger_verbs:
+        rest = words[1:]
+
+    # Strategy 1: leading consecutive capitalised words
+    if rest:
+        payee_words = []
+        i = 0
+        while i < len(rest) and rest[i][0].isupper():
+            payee_words.append(rest[i])
+            i += 1
+        if payee_words:
+            comment_words = rest[i:]
+            return ' '.join(payee_words), ' '.join(comment_words)
+
+    # Strategy 2: first capitalised tag
+    for tag in task.get('tags', []):
+        if tag and tag[0].isupper():
+            return tag, ''
+
+    # Strategy 3: everything after verb
+    if rest:
+        return ' '.join(rest), ''
+
+    return desc, ''
+
+
+# ============================================================================
+# Journal stat
+# ============================================================================
+
+def journal_path(journal: str) -> Path:
+    if journal:
+        return Path(journal).expanduser()
+    ledger_env = os.environ.get('LEDGER_FILE', '')
+    if ledger_env:
+        return Path(ledger_env).expanduser()
+    return Path.home() / '.hledger.journal'
+
+
+def get_journal_stat(journal: str) -> tuple:
+    try:
+        st = journal_path(journal).stat()
+        return st.st_mtime, st.st_size
+    except OSError:
+        return 0.0, 0
+
+
+# ============================================================================
+# hledger interaction
+# ============================================================================
+
+def run_hledger_add(date: str, description: str, journal: str) -> int:
+    cmd = ['hledger']
+    if journal:
+        cmd += ['-f', journal]
+    cmd += ['add', date, description]
+
+    try:
+        tty = open('/dev/tty', 'r+b', buffering=0)
+        proc = subprocess.run(cmd, stdin=tty, stdout=tty, stderr=tty)
+        tty.close()
+        return proc.returncode
+    except OSError as e:
+        print(f'[hledger-add] ERROR: could not open /dev/tty: {e}', file=sys.stderr)
+        return 1
+
+
+# ============================================================================
+# Main
+# ============================================================================
+
+def main() -> int:
+    data = sys.stdin.read().strip()
+    lines = data.split('\n') if data else []
+    if len(lines) < 2:
+        if lines and lines[0]:
+            print(lines[0])
+        return 0
+
+    original = json.loads(lines[0])
+    modified = json.loads(lines[1])
+
+    # Only trigger on pending → completed
+    if original.get('status') != 'pending' or modified.get('status') != 'completed':
+        print(json.dumps(modified))
+        return 0
+
+    cfg = load_config()
+
+    if not is_triggered(modified, cfg):
+        print(json.dumps(modified))
+        return 0
+
+    trigger_verbs = {v.strip().lower() for v in cfg['trigger_verbs'].split(',') if v.strip()}
+    payee, comment = parse_payee(modified, trigger_verbs)
+
+    # Date: task end date if available, else today
+    end_raw = modified.get('end', '')
+    if end_raw:
+        try:
+            date = datetime.strptime(end_raw[:8], '%Y%m%d').strftime('%Y-%m-%d')
+        except ValueError:
+            date = datetime.now().strftime('%Y-%m-%d')
+    else:
+        date = datetime.now().strftime('%Y-%m-%d')
+
+    # Amount from UDA (optional)
+    amount_uda = cfg.get('amount_uda', '')
+    amount = modified.get(amount_uda, '').strip() if amount_uda else ''
+
+    # hledger tags from TW metadata
+    # project.home.reno → 'project: home.reno'
+    # priority H        → 'pri: H'
+    # +tag              → 'tag:'
+    # Excluded: trigger_tags (txn, acct — already implicit) and the payee tag
+    trigger_tag_set = {t.strip() for t in cfg['trigger_tags'].split(',') if t.strip()}
+    payee_lower = payee.lower()
+
+    hledger_tags = []
+    project = modified.get('project', '')
+    if project:
+        hledger_tags.append(f'project: {project}')
+    priority = modified.get('priority', '')
+    if priority:
+        hledger_tags.append(f'pri: {priority}')
+    for tag in modified.get('tags', []):
+        if tag and tag not in trigger_tag_set and tag.lower() != payee_lower:
+            hledger_tags.append(f'{tag}:')
+
+    # Annotations — skip meta annotations added by hooks
+    skip_prefixes = ('note:', 'ledger:', 'nb:')
+    ann_texts = [
+        a.get('description', '')
+        for a in modified.get('annotations', [])
+        if a.get('description') and not any(
+            a['description'].startswith(p) for p in skip_prefixes
+        )
+    ]
+
+    # Build hledger description argument (single line)
+    # Format: 'Payee  ;human text  amount  tag1:, tag2: value  | ann1 | ann2'
+    human_text = ' '.join(filter(None, [comment, amount]))
+    tags_text  = ', '.join(hledger_tags)
+    ann_text   = ' | '.join(ann_texts)
+    comment_text = '  '.join(filter(None, [human_text, tags_text, ann_text]))
+    hledger_desc = payee + ('  ;' + comment_text if comment_text else '')
+
+    journal = cfg.get('journal', '')
+    mtime_before, size_before = get_journal_stat(journal)
+
+    # Prompt
+    detail = ' | '.join(filter(None, [comment, amount]))
+    print(f'\n[hledger-add] {payee} — {date}' + (f'  ({detail})' if detail else ''), file=sys.stderr)
+
+    run_hledger_add(date, hledger_desc, journal)
+
+    mtime_after, size_after = get_journal_stat(journal)
+    recorded = (mtime_after > mtime_before and size_after > size_before)
+
+    if recorded:
+        ann = {
+            'entry': datetime.utcnow().strftime('%Y%m%dT%H%M%SZ'),
+            'description': f'ledger: {payee} {date}',
+        }
+        modified.setdefault('annotations', []).append(ann)
+        print(f'[hledger-add] recorded: {payee} {date}', file=sys.stderr)
+    else:
+        print('[hledger-add] transaction not recorded — add to ledger manually', file=sys.stderr)
+
+    print(json.dumps(modified))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

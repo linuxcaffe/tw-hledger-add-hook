@@ -1,17 +1,79 @@
-# taskwarrior-hledger-add-hook
+# tw-hledger-add-hook
 
-##### _note: no functioning code here yet, this is mostly concept so far. ideas welcome_
+Taskwarrior on-modify hook: launches `hledger add` interactively when a
+transaction-related task is completed.
 
-Taskwarrior (http://taskwarrior.org) is great for tracking all kinds of tasks, and many of those tasks will be "transactional", having something to do with accounting. "pay Hydro Electric bill", "invoice Random Productions for video shoot", "buy new furnace gaskets", tracking these, and doing these, is great, but it's HALF the job! If you are completing these tasks but not recording the transactions in some accounting system, you are missing an opportunity to get your sh#t together.
+## What it does
 
-Luckily, there are a few excellent accounting packages for people who use taskwarrior. If you use TW then you probably like things at the command-line, and you probably appreciate having all of your data in human readable (and editable) text files. For that sort of user (you) there exists *ledger. That's http://ledger-cli.org and it's haskell cousin http://hledger.org. Both of these programs work the same way, and (to a large extent) are file-compatible, that is, you can create a file in one, and read it with the other, and either of them will help you track all sorts of accounting transactions, and generate detailed and accurate reports. 
+When you complete a task tagged `+txn`, `+acct`, or whose description starts
+with a trigger verb (`pay`, `buy`), the hook fires `hledger add` with the date
+and payee pre-filled from the task. You fill in the posting lines interactively,
+then the hook annotates the task with a `ledger: Payee DATE` reference.
 
-This tw hook script will use hledger (http://hledger.org) and it's interactive add function (http://hledger.org/manual.html#add) taking all of the details of the accounting-related task you just completed, and piping it through the interactive "add" command, into a properly formatted *ledger file. The object here is to tie the act of marking such a task "done" directly to the ledger-process, so you don't have to do it later. It will take only seconds to do, as you have already entered most of the data and metadata, and the hledger add function offers good predictive defaults. Using this hook will help you establish a regular pattern of accurate bookkeeping, and if you don't do it right then, you'll forget!
+## Payee extraction
 
-### Requirements
-- taskwarrior (http://taskwarrior.org/download/)
-- hledger (http://hledger.org/download.html)
-- tasklib (https://github.com/tbabej/tasklib/tree/develop) note: must use develop branch
+| Description | Payee | Comment |
+|-------------|-------|---------|
+| `pay Koodo Mobile cel phone bill` | `Koodo Mobile` | `cel phone bill` |
+| `pay Claude subscription` | `Claude` | `subscription` |
+| `buy rechargeable hand-warmers` (+Amazon tag) | `Amazon` | — |
+| `pay koodo mobile cel phone bill` | `koodo mobile cel phone bill` | — |
 
-for how-it-could-work see the psudocode in the on-modify-hledger-add file
+**Strategy cascade:**
+1. Consecutive capitalised word(s) after the trigger verb → payee; remainder → comment
+2. First capitalised tag → payee (fallback when no caps in description)
+3. All words after the trigger verb → payee (last resort)
 
+## hledger add pre-fill
+
+```
+hledger [-f FILE] add DATE 'Payee Name  ;comment amount'
+```
+
+If the `amount` UDA is set on the task (e.g. `task <id> modify amount:$42.50`),
+it is included in the comment so you can see it while filling in postings.
+
+## Installation
+
+```bash
+bash hledger-add.install
+```
+
+Edit `~/.task/config/hledger-add.rc`.
+
+Optionally define an amount UDA in `.taskrc`:
+```
+uda.amount.type=string
+uda.amount.label=Amount
+```
+
+## Config (`~/.task/config/hledger-add.rc`)
+
+```ini
+hledger.journal         =        # blank = hledger default ($LEDGER_FILE or ~/.hledger.journal)
+hledger.trigger_tags    = txn,acct
+hledger.trigger_verbs   = pay,buy
+hledger.amount_uda      = amount  # blank to disable
+```
+
+## Usage
+
+```bash
+task add pay Koodo Mobile cel phone bill +txn
+task <id> done
+# → hledger add fires interactively, pre-filled with date and "Koodo Mobile  ;cel phone bill"
+# → on completion: task annotated with "ledger: Koodo Mobile 2026-03-04"
+```
+
+## Requirements
+
+- Taskwarrior 2.6.x
+- hledger (any version supporting `hledger add`)
+- Python 3.8+
+
+## Files
+
+| File | Installed to |
+|------|-------------|
+| `on-modify_hledger-add.py` | `~/.task/hooks/` |
+| `hledger-add.rc` | `~/.task/config/` |
