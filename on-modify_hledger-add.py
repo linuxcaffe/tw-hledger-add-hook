@@ -61,7 +61,9 @@ def is_triggered(task: dict, cfg: dict) -> bool:
     words = desc.split()
     first_word = words[0].lower() if words else ''
     trigger_verbs = {v.strip().lower() for v in cfg['trigger_verbs'].split(',') if v.strip()}
-    return first_word in trigger_verbs
+    if first_word in trigger_verbs:
+        return True
+    return bool(project_to_account(task.get('project', '')))
 
 
 # ============================================================================
