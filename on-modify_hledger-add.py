@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+import os as _os_timing, time as _time_module
+if _os_timing.environ.get('TW_TIMING'):
+    import atexit as _atexit
+    _t0 = _time_module.perf_counter()
+
+    def _report_timing(_f=__file__):
+        elapsed = (_time_module.perf_counter() - _t0) * 1000
+        import os.path as _osp
+        print(f"[timing] {_osp.basename(_f)}: {elapsed:.1f}ms", file=__import__('sys').stderr)
+
+    _atexit.register(_report_timing)
+
 """
 on-modify_hledger-add.py — Taskwarrior on-modify hook
 Launches hledger add interactively when a transaction-tagged task is completed.
