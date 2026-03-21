@@ -11,7 +11,7 @@ set -euo pipefail
 #   ~/.task/config/hledger-add.rc  (only if not already present)
 # ============================================================================
 
-VERSION="0.1.0"
+VERSION="0.1.1"
 APPNAME="hledger-add"
 
 RED='\033[0;31m'
