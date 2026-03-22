@@ -57,10 +57,7 @@ else:
     def debug_log(message, level=1):
         pass
 
-# ============================================================================
-# Original Code
-# ============================================================================
-
+import os as _os_timing, time as _time_module
 if _os_timing.environ.get('TW_TIMING'):
     import atexit as _atexit
     _t0 = _time_module.perf_counter()
