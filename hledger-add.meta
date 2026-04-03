@@ -10,7 +10,7 @@ base_url=https://raw.githubusercontent.com/linuxcaffe/tw-hledger-add-hook/master
 files=on-modify_hledger-add.py:hook,hledger-add.rc:config,README.md:doc
 tags=hledger, ledger, accounting, finance, transaction, hook
 
-checksums=b54b3ab57392c1ac7fb8809a270285a5b10f1bac61646823c2da4bf5704b973d,c160ffc388fbdf6312b984f4eaf0ef1ff5209c12733687b7d0d3f27844942468,7c4d14b5b43bbd8d4accffa08688b107f038d92570074e514e86b5d9dd7321e2
+checksums=f58858779adb7d449cc259a146d7cfdb07008d219af0cf6d04a90ab7b68f4895,c160ffc388fbdf6312b984f4eaf0ef1ff5209c12733687b7d0d3f27844942468,7c4d14b5b43bbd8d4accffa08688b107f038d92570074e514e86b5d9dd7321e2
 
 author=Designed by linuxcaffe, implemented by Claude Code
 license=MIT
