@@ -284,6 +284,12 @@ def main() -> int:
 
     cfg = load_config()
 
+    if os.environ.get('TW_WEB'):
+        # Non-interactive web context — skip hledger prompt, pass task through unchanged.
+        # User can record the ledger entry manually in a terminal.
+        print(json.dumps(modified))
+        return 0
+
     if not is_triggered(modified, cfg):
         print(json.dumps(modified))
         return 0
