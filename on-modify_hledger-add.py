@@ -284,11 +284,13 @@ def main() -> int:
 
     cfg = load_config()
 
-    if os.environ.get('TW_WEB'):
-        # Non-interactive web context — skip hledger prompt, pass task through unchanged.
-        # User can record the ledger entry manually in a terminal.
-        print(json.dumps(modified))
-        return 0
+    if os.environ.get('TW_NOINTERACT'):
+        import json as _json
+        print(_json.dumps({
+            'type': 'tw_needs_pty',
+            'cmd':  os.environ.get('TW_PREFLIGHT_CMD', ''),
+        }), file=sys.stderr)
+        return 1
 
     if not is_triggered(modified, cfg):
         print(json.dumps(modified))
