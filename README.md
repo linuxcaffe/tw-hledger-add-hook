@@ -65,6 +65,12 @@ task <id> done
 # → on completion: task annotated with "ledger: Koodo Mobile 2026-03-04"
 ```
 
+## Non-interactive clients (tw-web)
+
+`hledger add` needs a terminal. Under a client that sets `TW_NOINTERACT=1`, the hook stops the `done`
+and signals `tw_needs_pty`, so the client can offer to run `task <id> done` in a terminal, where the hook
+runs as usual. The client ↔ hook contract is in awesome-taskwarrior's [CONVENTIONS.md](https://github.com/linuxcaffe/awesome-taskwarrior/blob/main/CONVENTIONS.md).
+
 ## Requirements
 
 - Taskwarrior 2.6.x
