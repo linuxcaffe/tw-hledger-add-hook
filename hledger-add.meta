@@ -2,7 +2,7 @@
 # Fires hledger add interactively on completion of +txn/+acct tasks or tasks starting with a trigger verb (pay, buy). Pre-fills date and payee from task description; maps TW project/priority/tags to hledger inline tags. Annotates task with ledger reference on success.
 
 name=hledger-add
-version=0.1.1
+version=0.1.2
 type=hook
 description=Fires hledger add interactively on completion of +txn/+acct tasks or tasks starting with a trigger verb (pay, buy). Pre-fills date and payee from task description; maps TW project/priority/tags to hledger inline tags. Annotates task with ledger reference on success.
 repo=https://github.com/linuxcaffe/tw-hledger-add-hook
@@ -10,7 +10,7 @@ base_url=https://raw.githubusercontent.com/linuxcaffe/tw-hledger-add-hook/master
 files=on-modify_hledger-add.py:hook,hledger-add.rc:config,README.md:doc
 tags=hledger, ledger, accounting, finance, transaction, hook
 
-checksums=1484c17b0884ef0b644cfe9720db438630c666e0ef72905c576eae1b7824a766,c160ffc388fbdf6312b984f4eaf0ef1ff5209c12733687b7d0d3f27844942468,2765157f33f00d19a7d516887c72317943698798c9a8a27ae6767ca3e615708f
+checksums=b688097a41085c4da09babb82858e6f5f9a97348186ac6834189204960d37955,c160ffc388fbdf6312b984f4eaf0ef1ff5209c12733687b7d0d3f27844942468,2765157f33f00d19a7d516887c72317943698798c9a8a27ae6767ca3e615708f
 
 author=Designed by linuxcaffe, implemented by Claude Code
 license=MIT

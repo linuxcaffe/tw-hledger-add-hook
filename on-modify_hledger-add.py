@@ -89,7 +89,7 @@ from datetime import datetime
 from pathlib import Path
 
 CONFIG_FILE = Path.home() / '.task' / 'config' / 'hledger-add.rc'
-VERSION = '0.1.0'
+VERSION = '0.1.2'
 
 
 # ============================================================================
@@ -284,6 +284,12 @@ def main() -> int:
 
     cfg = load_config()
 
+    # Only a transaction needs `hledger add`; every other completion goes straight through,
+    # with or without a terminal.
+    if not is_triggered(modified, cfg):
+        print(json.dumps(modified))
+        return 0
+
     if os.environ.get('TW_NOINTERACT'):
         import json as _json
         print(_json.dumps({
@@ -291,10 +297,6 @@ def main() -> int:
             'cmd':  os.environ.get('TW_PREFLIGHT_CMD', ''),
         }), file=sys.stderr)
         return 1
-
-    if not is_triggered(modified, cfg):
-        print(json.dumps(modified))
-        return 0
 
     trigger_verbs = {v.strip().lower() for v in cfg['trigger_verbs'].split(',') if v.strip()}
     payee, comment = parse_payee(modified, trigger_verbs)

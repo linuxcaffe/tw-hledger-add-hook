@@ -4,14 +4,18 @@ set -euo pipefail
 
 # ============================================================================
 # tw-hledger-add-hook - Standalone Installer
-# Version: 0.1.0
+# Version: 0.1.2
 #
 # Installs:
 #   ~/.task/hooks/on-modify_hledger-add.py
 #   ~/.task/config/hledger-add.rc  (only if not already present)
+# remove keeps hledger-add.rc and its include: tw -u is a remove followed by an
+# install, and the user's settings must survive it (CONVENTIONS §7). The include
+# goes in config/included.rc, and is looked for there and in .taskrc, so a
+# reinstall never adds a second one.
 # ============================================================================
 
-VERSION="0.1.1"
+VERSION="0.1.2"
 APPNAME="hledger-add"
 
 RED='\033[0;31m'
@@ -47,9 +51,14 @@ install() {
     fi
 
     TASKRC="${HOME}/.taskrc"
-    if ! grep -q "hledger-add.rc" "$TASKRC" 2>/dev/null; then
-        echo "include ~/.task/config/hledger-add.rc" >> "$TASKRC"
-        tw_msg "Added include to .taskrc"
+    INCLUDED="${CONFIG_DIR}/included.rc"
+    if ! grep -qs "hledger-add.rc" "$TASKRC" "$INCLUDED"; then
+        if [[ -f "$INCLUDED" ]]; then
+            echo "include ~/.task/config/hledger-add.rc" >> "$INCLUDED"
+        else
+            echo "include ~/.task/config/hledger-add.rc" >> "$TASKRC"
+        fi
+        tw_msg "Added the include for hledger-add.rc"
     else
         tw_msg "Config include already in .taskrc"
     fi
@@ -82,8 +91,9 @@ remove() {
         return 1
     fi
 
+    # The hook goes; the settings (hledger-add.rc) and their include stay, so tw -u keeps them.
     grep "^${APPNAME}|" "$MANIFEST_FILE" | cut -d'|' -f3 | while read -r file; do
-        if [[ -f "$file" ]]; then
+        if [[ -f "$file" && "$file" != *.rc ]]; then
             rm "$file"
             tw_msg "Removed: $(basename "$file")"
         fi
@@ -92,10 +102,8 @@ remove() {
     grep -v "^${APPNAME}|" "$MANIFEST_FILE" > "${MANIFEST_FILE}.tmp" || true
     mv "${MANIFEST_FILE}.tmp" "$MANIFEST_FILE"
 
-    TASKRC="${HOME}/.taskrc"
-    if grep -q "hledger-add.rc" "$TASKRC" 2>/dev/null; then
-        sed -i "/hledger-add.rc/d" "$TASKRC"
-        tw_msg "Removed config include from .taskrc"
+    if [[ -f "${CONFIG_DIR}/hledger-add.rc" ]]; then
+        tw_msg "Kept ${CONFIG_DIR}/hledger-add.rc and its include (your settings; delete both by hand if you mean to)"
     fi
 
     tw_success "Removed ${APPNAME}"
