@@ -43,7 +43,8 @@ def test_a_transaction_under_tw_noninteract_asks_for_a_terminal(home):
     r = run(task(tags=['txn'], description='pay hydro'), done, home, TW_NOINTERACT='1', TW_PREFLIGHT_CMD='12 done')
     assert r.returncode == 1
     sig = json.loads([l for l in r.stderr.splitlines() if l.startswith('{')][0])
-    assert sig == {'type': 'tw_needs_pty', 'cmd': '12 done'}
+    assert sig == {'type': 'tw_needs_pty', 'cmd': '12 done',
+                   'reason': "hledger-add: record 'pay hydro' with hledger add"}
 
 
 def test_a_modify_that_is_not_a_completion_goes_through(home):

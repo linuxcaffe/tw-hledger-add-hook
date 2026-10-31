@@ -89,7 +89,7 @@ from datetime import datetime
 from pathlib import Path
 
 CONFIG_FILE = Path.home() / '.task' / 'config' / 'hledger-add.rc'
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 
 # ============================================================================
@@ -295,6 +295,8 @@ def main() -> int:
         print(_json.dumps({
             'type': 'tw_needs_pty',
             'cmd':  os.environ.get('TW_PREFLIGHT_CMD', ''),
+            'reason': "hledger-add: record '{}' with hledger add".format(
+                modified.get('description', '')[:60]),
         }), file=sys.stderr)
         return 1
 

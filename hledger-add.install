@@ -4,7 +4,7 @@ set -euo pipefail
 
 # ============================================================================
 # tw-hledger-add-hook - Standalone Installer
-# Version: 0.1.2
+# Version: 0.1.3
 #
 # Installs:
 #   ~/.task/hooks/on-modify_hledger-add.py
@@ -15,7 +15,7 @@ set -euo pipefail
 # reinstall never adds a second one.
 # ============================================================================
 
-VERSION="0.1.2"
+VERSION="0.1.3"
 APPNAME="hledger-add"
 
 RED='\033[0;31m'
