@@ -1,10 +1,10 @@
 # hledger-add.meta
-# Fires hledger add interactively on completion of +txn/+acct tasks or tasks starting with a trigger verb (pay, buy). Pre-fills date and payee from task description; maps TW project/priority/tags to hledger inline tags. Annotates task with ledger reference on success.
+# Runs hledger add when a +txn or +acct task (or one starting "pay" or "buy") is done, pre-filled from the task, and annotates the task with the entry
 
 name=hledger-add
 version=0.1.3
 type=hook
-description=Fires hledger add interactively on completion of +txn/+acct tasks or tasks starting with a trigger verb (pay, buy). Pre-fills date and payee from task description; maps TW project/priority/tags to hledger inline tags. Annotates task with ledger reference on success.
+description=Runs hledger add when a +txn or +acct task (or one starting "pay" or "buy") is done, pre-filled from the task, and annotates the task with the entry
 repo=https://github.com/linuxcaffe/tw-hledger-add-hook
 base_url=https://raw.githubusercontent.com/linuxcaffe/tw-hledger-add-hook/master
 files=on-modify_hledger-add.py:hook,hledger-add.rc:config,README.md:doc
